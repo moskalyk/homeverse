@@ -1,0 +1,77 @@
+import "@fluencelabs/aqua-lib/builtin.aqua"
+
+data Chore:
+    name: string
+
+data Proposal:
+    name: string
+    description: string
+    ask: i64
+    outsource: bool
+
+data Space:
+    peer_id: PeerId
+    name: string
+
+service HomeService("HomeService"):
+    register(spaces: []Space) -> bool
+    radio(cid: string) -> bool
+    kitchen(chores: []Chore, peer_id: PeerId) -> bool
+    livingRoom(chores: []Chore, peer_id: PeerId) -> bool -- zone 1-N
+    diningRoom(chores: []Chore, peer_id: PeerId) -> bool
+    bathroom(chores: []Chore, peer_id: PeerId) -> bool
+    closet(chores: []Chore, peer_id: PeerId) -> bool
+    window(chores: []Chore, peer_id: PeerId) -> bool
+    renovate(proposal: Proposal, peer_id: PeerId) -> bool
+    frame(cid: string, peer_id: PeerId) -> bool
+    sublet(proposal: Proposal, peer_id: PeerId) -> bool
+
+func echo() -> PeerId:
+    <- %init_peer_id%
+
+func controller(action: i32, chores: []Chore, peer_id: PeerId) -> bool:
+    on peer_id:
+        result: *bool
+        if action == 0:
+            result <- HomeService.kitchen(chores, peer_id)
+        if action == 1:
+            result <- HomeService.livingRoom(chores, peer_id)
+        if action == 2:
+            result <- HomeService.diningRoom(chores, peer_id)
+        if action == 3:
+            result <- HomeService.bathroom(chores, peer_id)
+        if action == 4:
+            result <- HomeService.closet(chores, peer_id)
+        if action == 5:
+            result <- HomeService.window(chores, peer_id)
+    <- result!
+
+func renovate(proposal: Proposal, peer_id: PeerId) -> bool:
+    on peer_id:
+        res <- HomeService.renovate(proposal, peer_id)
+    <- res
+
+func setRadio(cid: string, peer_id: PeerId) -> bool:
+    on peer_id:
+        res <- HomeService.radio(cid)
+    <- res
+
+func setFrame(cid: string, peer_id: PeerId) -> bool:
+    on peer_id:
+        res <- HomeService.frame(cid, peer_id)
+    <- res
+
+func sublet(proposal: Proposal, peer_id: PeerId) -> bool:
+    on peer_id:
+        res <- HomeService.sublet(proposal, peer_id)
+    <- res
+
+func register(spaces: []Space, peer_id: PeerId) -> bool:
+    on peer_id:
+        res <- HomeService.register(spaces)
+    <- res
+
+func registerVia(spaces: []Space, relay_id: PeerId, peer_id: PeerId) -> bool:
+    on peer_id via relay_id:
+        res <- HomeService.register(spaces)
+    <- res
